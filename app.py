@@ -33,12 +33,12 @@ maxclients = int(settings['maxclients'])
 if update_offsets == '1':
     try:
         offsets = get('https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/offsets.json').json()
-        clientdll = get('https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/client.dll.json').json()
+        clientdll = get('https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/client_dll.json').json()
     except Exception as e:
         print(e)
         try:
             print('[-] Unable to parse offsets. Using from current folder')
-            with open(f'client.dll.json', 'r') as a:
+            with open(f'client_dll.json', 'r') as a:
                 clientdll = json.load(a)
             with open(f'offsets.json', 'r') as b:
                 offsets = json.load(b)
@@ -148,6 +148,14 @@ def checkissplit(mapname):
         if name in mapname:
             return True
 
+def read_string(address, byte=50, encoding='UTF-8'):
+    buff = cs2.memory.read(address, byte)
+    i = buff.find(b'\x00')
+    if i != -1:
+        buff = buff[:i]
+    buff = buff.decode(encoding)
+    return buff
+
 
 def read_string_memory(address):
     data = b""
@@ -173,9 +181,9 @@ def readmapfrommem():
             mapname = folder
             break
     if mapname != 'empty':
-        print('[+] ' + Fore.GREEN + f'Found map {mapname}' + Style.RESET_ALL)
+        print(f'[+]Found map {mapname}')
     mapname = str(mapname)
-    return mapname 
+    return mapname
 
 def get_only_mapname():
     try:
@@ -418,7 +426,7 @@ while running:
                                 screen.blit(text_surface, (transformed_x, transformed_y))
                                 name = read_string_memory(EntityAddress + m_iszPlayerName)
                         if isdefusing == 1:
-                            hasdefuser = struct.unpack("?", cs2.memory.read(EntityAddress + m_bPawnHasDefuser, 1, memprocfs.FLAG_NOCACHE))[0]
+                            hasdefuser = struct.unpack("?", cs2.memory.read(EntityAddress + m_bHasDefuser, 1, memprocfs.FLAG_NOCACHE))[0]
                             if hasdefuser:
                                 pygame.draw.line(screen, (255, 0, 0), (transformed_x - cross_size, transformed_y - cross_size), (transformed_x + cross_size, transformed_y + cross_size), 2)
                                 pygame.draw.line(screen, (255, 0, 0), (transformed_x + cross_size, transformed_y - cross_size), (transformed_x - cross_size, transformed_y + cross_size), 2)
